@@ -14,11 +14,12 @@ Created on Sat Jun 20 09:32:43 2020
 
 import numpy as np
 from vpython import *
-N = 20 #num. bolitas
+N =200 #num. bolitas
 n = N #contador bolitas
 wsize = 10 #medida del espacio
 rad = np.random.rand(n,1) #array radios de las bolas
-rad = wsize/(4 * n ) * (1 + rad )
+#rad = wsize/(4 * n ) * (1 + rad )#calculo de radio: en las colisiones sumamos los radios y el total es aprox. 1/4 del tamaño del espacio
+rad = wsize/8 * (1 + rad )/(n ** (1.0 / 3))
 dst = rad.reshape(1,n) + rad #calcula matriz distancias para detectar colisiones
 dst = dst**2# distancia al cuadrado de la suma de radios dos a dos
 
@@ -82,21 +83,24 @@ while (True):
         balls[i].pos = vector(org[i,0],org[i,1],org[i,2])
         balls[i].velocity = vector( vel[i,0], vel[i,1], vel[i,2])
          
-    diff = org.reshape(n,1,3) - org #distancia entre bolas
-    d = (diff ** 2).sum(2) #array nxn distancia entre bolas 2 a 2
-    i = np.arange(n)
-    d[i,i] = np.inf
-    chkdst = d < dst #array que indica true si dos bolas han chocado
-    coords = np.argwhere(chkdst)
-    #print(coords)
-    coll =[]
 
-    #generamos list de los pares de bolas que colisionan
-    for a in range(len(coords)):
-        if coords[a,0] < coords[a,1]: 
-            coll.append(coords[a]) #lista de pares de bolas que han colisionado
-    #print(coll)
-    if t > 100*deltat: #no empieza a detectar colisiones hasta pasados 50 frames, sino se autodestruiria
+    if t > 200*deltat: #no empieza a detectar colisiones hasta pasados 100frames, sino se autodestruiria
+
+        diff = org.reshape(n,1,3) - org #distancia entre bolas
+        d = (diff ** 2).sum(2) #array nxn distancia entre bolas 2 a 2
+        i = np.arange(n)
+        d[i,i] = np.inf
+        chkdst = d < dst #array que indica true si dos bolas han chocado
+        coords = np.argwhere(chkdst) #ccords lista de filas y cols (numero de bola) que han colisionado
+        #print(coords)
+        coll =[]
+    
+        #generamos list de los pares de bolas que colisionan
+        for a in range(len(coords)):
+            if coords[a,0] < coords[a,1]: 
+                coll.append(coords[a]) #lista de pares de bolas que han colisionado
+
+      
         delb = [] #lista de bolas a borrar
         #collision action: Bigger ball increases radius, smaller gets deleted
         for i in range(len(coll)):  #coll lista de pares de bolas en colision
@@ -109,14 +113,14 @@ while (True):
             n = n-1
     
             if r1 > r2 :
-                balls[b1].radius = r1 + r2
-                rad[b1,0] = r1 + r2
+                balls[b1].radius = (r1**3 + r2**3)**(1.0/3)
+                rad[b1,0] = balls[b1].radius
                 #remove smaller ball
                 delb.append(b2)
 
             else:
-                balls[b2].radius = r1 + r2
-                rad[b2,0] = r1 + r2
+                balls[b2].radius = (r1**3 + r2**3)**(1.0/3)
+                rad[b2,0] = balls[b2].radius
                 delb.append(b1)
 
         delb.sort(reverse=True)
@@ -143,7 +147,8 @@ while (True):
             n = N #contador bolitas
             t=0
             rad = np.random.rand(n,1) #array radios de las bolas
-            rad = wsize/(4 * n ) * (1 + rad )
+            #rad = wsize/(4 * n ) * (1 + rad )
+            rad = wsize/(8 * 1.5 ) * (1 + rad )/(n ** (1.0 / 3))
             dst = rad.reshape(1,n) + rad #calcula matriz distancias para detectar colisiones
             dst = dst**2# distancia al cuadrado de la suma de radios dos a dos
             pos = org[0]
