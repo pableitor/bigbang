@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 modelo big bang 3D.
-Universo cubico 
+Universo esferico
 En la colision la particula de mayor radio absorbe a la menor , los radios se suman
 y la menor desaparece.
 El tamaño de las particulas es aleatorio, teniendo en cuenta que al final solo queda una
@@ -14,7 +14,7 @@ Created on Sat Jun 20 09:32:43 2020
 
 import numpy as np
 from vpython import *
-N =200 #num. bolitas
+N =10 #num. bolitas
 n = N #contador bolitas
 wsize = 10 #medida del espacio
 rad = np.random.rand(n,1) #array radios de las bolas
@@ -31,18 +31,14 @@ col = np.random.rand(n,3) #array de colores de las bolas
 col = 0.5 + 0.5 * col
 balls = [] #lista bolas
 
-walls = [vector(wsize,0,0),vector(-wsize,0,0),vector(0,wsize,0),vector(0,-wsize,0),vector(0,0,wsize),vector(0,0,-wsize)]
+
+# crea la lista de particulas
 for i in range(n):
-    ball = sphere(pos=vector(org[i,0],org[i,1],org[i,2]), radius=rad[i,0] , color=vector(col[i,0], col[i,1], col[i,2]) )
+    ball = sphere(pos=vector(org[i,0],org[i,1],org[i,2]), radius=rad[i,0] , color=vector(col[i,0], col[i,1], col[i,2]))
     ball.velocity = vector( vel[i,0], vel[i,1], vel[i,2])
     balls.append(ball)
-wallR = box(pos=walls[0], size=vector(0.2,2*wsize,2*wsize), color=color.green, opacity=0.5)
-wallL = box(pos=walls[1], size=vector(0.2,2*wsize,2*wsize), color=color.red, opacity=0.5)
-wallT = box(pos=walls[2], size=vector(2*wsize,0.2,2*wsize), color=color.blue, opacity=0.5)
-wallD = box(pos=walls[3], size=vector(2*wsize,0.2,2*wsize), color=color.blue, opacity=0.5)
-wallF = box(pos=walls[4], size=vector(2*wsize,2*wsize,0.2), color=color.yellow, opacity=0)
-wallB = box(pos=walls[5], size=vector(2*wsize,2*wsize,0.2), color=color.yellow, opacity=0.5)
-
+#crea limite universo observable
+limit = sphere(pos=vector(0,0,0), radius=wsize , color=color.blue, opacity = 0.1 )
 
 deltat = 0.005
 t = 0
@@ -53,6 +49,7 @@ while (True):
     #rate(400)
    
     org = org + vel * deltat #actualiza coordenadas
+    """
     #check rebote con las paredes derecha-izquierda (L - R)
     checkR = (org[:,0] + rad[:,0] >= wallR.pos.x) #testea limite derecho
     org[:,0] =  org[:,0] + checkR * (walls[0].x - (org[:,0] + rad[:,0]))
@@ -75,8 +72,13 @@ while (True):
     checkB = (org[:,2] -rad[:,0] <= wallB.pos.z) #testea limite trasero
     org[:,2] =  org[:,2] + checkB * (walls[5].z - (org[:,2] - rad[:,0]))
     vel[:,2] = vel[:,2] * (1 - 2 * checkB) 
-        
-    for i in range(n):
+    """
+    #chequea colisiones con el limite
+    for i in range(n): 
+        checkl = (mag(vector(org[i,0],org[i,1],org[i,2] )) + rad[i,0] >= wsize)
+        if checkl :
+            org[i,:] =  org[i,:] + checkl * (wsize - (mag(vector(org[i,0],org[i,1],org[i,2] )) + rad[i,0]))
+            vel[i,:] = vel[i,:] * (1 - 2 * checkl)
     #i =np.range(n)
         
         #actualiza posiciones y velocidades de las bolas
