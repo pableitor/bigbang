@@ -70,7 +70,7 @@ while (True):
     d[i,i] = np.inf
     chkdst = d < dst #array que indica true si dos bolas han chocado
     coords = np.argwhere(chkdst) #coords lista de filas y cols (numero de bola) que han colisionado
-    if len(coords) <= N / 10:
+    if len(coords) <= N / 20:
         detcol = True #en el momento en que ya se han separado todas las bolas comienza deteccion colisiones
         
     
